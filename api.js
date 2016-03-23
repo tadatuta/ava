@@ -173,12 +173,22 @@ Api.prototype._prefixTitle = function (file) {
 };
 
 Api.prototype._restartTimer = function () {
-	clearTimeout(this._timer);
+	if (this._timer) {
+		this._repeatTimer = true;
+		return;
+	}
 
 	this._timer = setTimeout(this._onTimeout, this.options.timeout);
 };
 
 Api.prototype._onTimeout = function () {
+	this._timer = null;
+	if (this._repeatTimer) {
+		this._repeatTimer = false;
+		this._restartTimer();
+		return;
+	}
+
 	var message = 'Exited because no new tests completed within last ' + this.options.timeout + 'ms of inactivity';
 
 	this._handleExceptions({

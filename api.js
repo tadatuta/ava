@@ -198,6 +198,8 @@ Api.prototype._onTimeout = function () {
 		exception: new AvaError(message),
 		file: null
 	});
+
+	this.emit('timeout');
 };
 
 Api.prototype.run = function (files, options) {
@@ -238,6 +240,12 @@ Api.prototype.run = function (files, options) {
 			self.base = path.relative('.', commonPathPrefix(files)) + path.sep;
 
 			var tests = new Array(self.fileCount);
+
+			self.on('timeout', function () {
+				tests.forEach(function (fork) {
+					fork.exit();
+				});
+			});
 
 			return new Promise(function (resolve) {
 				function run() {

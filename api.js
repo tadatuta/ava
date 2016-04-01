@@ -13,6 +13,7 @@ var commonPathPrefix = require('common-path-prefix');
 var resolveCwd = require('resolve-cwd');
 var uniqueTempDir = require('unique-temp-dir');
 var findCacheDir = require('find-cache-dir');
+var debounce = require('debounce');
 var slash = require('slash');
 var isObj = require('is-obj');
 var ms = require('ms');
@@ -185,11 +186,13 @@ Api.prototype._prefixTitle = function (file) {
 	return prefix;
 };
 
-Api.prototype._restartTimer = function () {
-	clearTimeout(this._timer);
+Api.prototype._restartTimer = debounce(function () {
+	if (this._timer) {
+		clearTimeout(this._timer);
+	}
 
 	this._timer = setTimeout(this._onTimeout, this.options.timeout);
-};
+}, 200);
 
 Api.prototype._onTimeout = function () {
 	var message = 'Exited because no new tests completed within last ' + this.options.timeout + 'ms of inactivity';
